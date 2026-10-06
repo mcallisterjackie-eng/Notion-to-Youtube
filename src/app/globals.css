@@ -40,9 +40,9 @@ h1, h2, h3, p { margin: 0; }
 .row { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
 .split { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--space-4); }
 .measure { max-width: 640px; }
-.grid-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--space-6); }
-.grid-videos { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-8) var(--space-6); }
-.grid-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-12); }
+.grid-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: var(--space-6); }
+.grid-videos { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr)); gap: var(--space-8) var(--space-6); }
+.grid-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: var(--space-12); }
 .two-col { display: flex; flex-wrap: wrap; gap: var(--space-16); }
 .two-col > :first-child { flex: 1 1 280px; }
 .two-col > :last-child { flex: 2 1 520px; min-width: 0; }
@@ -84,7 +84,7 @@ h1, h2, h3, p { margin: 0; }
 .footer-top { display: flex; flex-wrap: wrap; gap: var(--space-12); justify-content: space-between; }
 .footer-brand { flex: 1 1 260px; max-width: 360px; }
 .footer-brand img { width: 56px; height: 56px; border-radius: var(--radius-md); }
-.footer-cols { flex: 2 1 480px; display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--space-8); }
+.footer-cols { flex: 2 1 480px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr)); gap: var(--space-8); }
 .footer-col { display: flex; flex-direction: column; gap: var(--space-3); }
 .footer-col .eyebrow { color: var(--ink-muted); margin-bottom: var(--space-1); }
 .foot-link { font-size: 14px; line-height: 20px; font-weight: 500; color: var(--ink-muted); text-decoration: none; }
@@ -194,7 +194,7 @@ h1, h2, h3, p { margin: 0; }
 @media (max-width: 720px) { .pricing-card { padding: var(--space-6); gap: var(--space-8); } }
 
 /* Old way vs new way */
-.compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-6); }
+.compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: var(--space-6); }
 .compare-col { border-radius: var(--radius-lg); padding: var(--space-8); display: flex; flex-direction: column; gap: var(--space-4); }
 .compare-old { background: var(--surface); }
 .compare-new { background: var(--charcoal); color: var(--white); }
@@ -204,7 +204,7 @@ h1, h2, h3, p { margin: 0; }
 .old-list li { counter-increment: step; display: flex; gap: var(--space-3); align-items: flex-start; color: var(--ink-muted); }
 .old-list li::before { content: counter(step); flex: none; width: 24px; height: 24px; border-radius: var(--radius-sm); background: var(--line); color: var(--ink); font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; margin-top: 0; }
 
-.product-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-6); }
+.product-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: var(--space-6); }
 .product-step { background: var(--canvas); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-6); display: flex; flex-direction: column; gap: var(--space-3); }
 @media (max-width: 720px) {
   .mapping-card { padding: var(--space-4); }
@@ -243,7 +243,7 @@ h1, h2, h3, p { margin: 0; }
 /* ---------- Info cards (contact, about) ---------- */
 .info-card { background: var(--surface); border-radius: var(--radius-lg); padding: var(--space-6); display: flex; flex-direction: column; gap: var(--space-2); }
 .form-card { border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: var(--space-12) var(--space-8); }
-.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-6); }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: var(--space-6); }
 .contact-layout { display: flex; flex-wrap: wrap; gap: var(--space-12); align-items: flex-start; }
 .contact-layout > :first-child { flex: 3 1 520px; min-width: 0; }
 .contact-layout > :last-child { flex: 2 1 300px; }

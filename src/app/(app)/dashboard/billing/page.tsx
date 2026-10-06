@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: "Billing" };
 
 /**
  * Billing is handled by Stripe.
- * TODO: "Subscribe" → create a Stripe Checkout Session for the $10/month price.
+ * TODO: "Subscribe" → create a Stripe Checkout Session for the $12/month price (Phase 9).
  * TODO: "Manage subscription" / "Update payment method" → open the Stripe Customer Portal.
  * Both are usually a POST to your backend that returns a Stripe URL to redirect to.
  */

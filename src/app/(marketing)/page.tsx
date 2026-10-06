@@ -47,7 +47,7 @@ export default function HomePage() {
           <div className="compare-col compare-new" style={{ justifyContent: "center" }}>
             <p className="eyebrow">With {product.name}</p>
             <p className="h2">Change the status. That&rsquo;s it.</p>
-            <p className="muted">Title, description, tags, thumbnail, schedule and the video itself all come from the page you already filled in.</p>
+            <p className="muted">Title, description, tags, schedule and the video itself all come from the page you already filled in.</p>
           </div>
         </div>
       </section>

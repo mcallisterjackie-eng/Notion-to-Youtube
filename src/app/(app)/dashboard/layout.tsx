@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app/AppShell";
+import { LOGIN_PATH } from "@/lib/routes";
+import { getSessionClaims } from "@/lib/session";
+import { toDisplayUser } from "@/lib/user";
 
 export const metadata: Metadata = {
   title: { default: "Dashboard", template: "%s | Dashboard" },
@@ -7,9 +11,11 @@ export const metadata: Metadata = {
 };
 
 /**
- * Everything under /dashboard is for signed-in users.
- * TODO (Supabase): read the session here on the server and redirect("/login") when there is none.
+ * Everything under /dashboard is for signed-in users. src/proxy.ts already
+ * redirects signed-out visitors; this server-side check is the second line of defence.
  */
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  return <AppShell>{children}</AppShell>;
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const claims = await getSessionClaims();
+  if (!claims) redirect(LOGIN_PATH);
+  return <AppShell user={toDisplayUser(claims)}>{children}</AppShell>;
 }

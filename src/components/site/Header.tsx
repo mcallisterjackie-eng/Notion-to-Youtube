@@ -3,17 +3,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { mainNav, site } from "@/content/site";
 import { Button } from "@/components/ui/Button";
 import { MenuIcon } from "@/components/ui/Icons";
 
 export function Header() {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-
-  // Close the mobile menu after navigating.
-  useEffect(() => setOpen(false), [pathname]);
+  // The menu is open only on the page where it was opened, so navigating closes it.
+  const [openOn, setOpenOn] = useState<string | null>(null);
+  const open = openOn === pathname;
 
   return (
     <header className="site-header">
@@ -27,7 +26,7 @@ export function Header() {
           aria-expanded={open}
           aria-controls="site-nav"
           aria-label={open ? "Close menu" : "Open menu"}
-          onClick={() => setOpen((o) => !o)}
+          onClick={() => setOpenOn(open ? null : pathname)}
         >
           <MenuIcon open={open} />
         </button>

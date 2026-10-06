@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Panel } from "./AppShell";
 import { sampleUser } from "@/content/app";
+import type { DisplayUser } from "@/lib/user";
 
 const timezones = ["America/Vancouver", "America/Edmonton", "America/Chicago", "America/Toronto", "Europe/London", "Europe/Berlin", "Asia/Tokyo", "Australia/Sydney"];
 
@@ -25,11 +26,10 @@ function SavedNote({ show, text = "Saved" }: { show: boolean; text?: string }) {
   return <span className="ui" role="status" style={{ color: "var(--link)" }}>{show ? text : ""}</span>;
 }
 
-export function ProfileForms() {
+export function ProfileForms({ user }: { user: DisplayUser }) {
   const details = useSaved();
   const password = useSaved();
   const prefs = useSaved();
-  const user = sampleUser; // TODO: signed-in user
 
   return (
     <>
@@ -69,7 +69,7 @@ export function ProfileForms() {
           <form className="stack gap-6" onSubmit={prefs.onSubmit}>
             <div className="sdl-field">
               <label className="sdl-field-label" htmlFor="timezone">Time zone</label>
-              <select id="timezone" name="timezone" className="sdl-input" defaultValue={user.timezone}>
+              <select id="timezone" name="timezone" className="sdl-input" defaultValue={sampleUser.timezone /* SAMPLE: the account time zone is stored from Phase 2 */}>
                 {timezones.map((tz) => <option key={tz} value={tz}>{tz.replace("_", " ")}</option>)}
               </select>
               <span className="sdl-field-hint">Used for scheduled publish times.</span>

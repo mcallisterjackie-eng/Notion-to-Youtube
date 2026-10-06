@@ -15,7 +15,7 @@ export const oldWay = [
   "Download the final cut from wherever it lives",
   "Copy the title and description out of Notion",
   "Paste in the tags, one at a time",
-  "Upload the thumbnail and set the schedule",
+  "Set the visibility and the schedule",
   "Go back to Notion and update the status",
 ];
 
@@ -27,7 +27,7 @@ export const steps = [
 
 export const mappingPoints = [
   "Works with the content calendar you already have. No rebuild.",
-  "Map any Notion property to title, description, tags, thumbnail and schedule.",
+  "Map any Notion property to title, description, tags, visibility and schedule.",
   "You choose which status starts the upload.",
   "Shared calendar? Only pages marked for YouTube are uploaded.",
 ];
@@ -37,8 +37,7 @@ export const mappings = [
   { from: "Name", type: "Title", to: "Title" },
   { from: "Script summary", type: "Text", to: "Description" },
   { from: "Keywords", type: "Multi-select", to: "Tags" },
-  { from: "Thumbnail", type: "Files", to: "Thumbnail" },
-  { from: "Final cut", type: "Files", to: "Video file" },
+  { from: "Final cut", type: "URL", to: "Video file" },
   { from: "Publish date", type: "Date", to: "Scheduled time" },
 ];
 
@@ -54,7 +53,7 @@ export const faqs = [
   { q: "Do I need to change my content calendar?", a: "No. You connect the database you already use and map its existing properties to YouTube’s fields." },
   { q: "Which status starts the upload?", a: "Any one you choose. Ready to Upload is the default, but you can pick whichever status fits your workflow." },
   { q: "I plan Instagram and TikTok in the same calendar. Will those upload too?", a: "No. Point it at the property that says where a post is going, like a Platform column, and only pages marked YouTube are uploaded. Everything else is ignored." },
-  { q: "Where does the video file come from?", a: "[Confirm: for example, a file attached to the Notion page, or a link to Google Drive or Dropbox.]" },
-  { q: "What does it cost?", a: "$10 a month for one user, with one Notion workspace and one YouTube channel. Cancel anytime." },
+  { q: "Where does the video file come from?", a: "Your Google Drive. Put the video’s Google Drive link in a URL property on the Notion page. The video stays in your Drive; we never store it." },
+  { q: "What does it cost?", a: "$12 a month for one user, with one Notion workspace, one YouTube channel and up to 100 videos a month. Cancel anytime." },
   { q: "Is my Notion and YouTube data safe?", a: "[Explain the access you request, what you store, and how people can disconnect at any time.]" },
 ];

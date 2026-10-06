@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
+import { getSessionClaims } from "@/lib/session";
+import { toDisplayUser } from "@/lib/user";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Progress } from "@/components/ui/Progress";
 import { AppPageHeader, Panel } from "@/components/app/AppShell";
 import { AppIcon } from "@/components/app/AppIcons";
 import { StatTile, StatusBadge } from "@/components/app/StatusBadge";
-import { describeFilter, sampleAutomation, sampleConnections, sampleSetup, sampleStats, sampleUploads, sampleUser, youtubeFields } from "@/content/app";
+import { describeFilter, sampleAutomation, sampleConnections, sampleSetup, sampleStats, sampleUploads, youtubeFields } from "@/content/app";
 
 export const metadata: Metadata = { title: "Overview" };
 
-export default function OverviewPage() {
-  const first = sampleUser.name.split(" ")[0];
+export default async function OverviewPage() {
+  const first = toDisplayUser(await getSessionClaims()).name.split(" ")[0];
   // The Automation card reads the same saved settings that Connections and Field Mapping edit.
   const auto = sampleAutomation;
   const { notion, youtube } = sampleConnections;

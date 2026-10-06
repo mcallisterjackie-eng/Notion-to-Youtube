@@ -3,29 +3,30 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { appNav, sampleUser } from "@/content/app";
+import { useState } from "react";
+import { appNav } from "@/content/app";
 import { product } from "@/content/product";
 import { signOut } from "@/lib/auth";
+import type { DisplayUser } from "@/lib/user";
 import { MenuIcon } from "@/components/ui/Icons";
 import { AppIcon } from "./AppIcons";
 
 /** Logged-in layout: left navigation panel, user block, log out, and the page. */
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({ user, children }: { user: DisplayUser; children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  // The menu is open only on the page where it was opened, so navigating closes it.
+  const [openOn, setOpenOn] = useState<string | null>(null);
+  const open = openOn === pathname;
   const [leaving, setLeaving] = useState(false);
 
-  useEffect(() => setOpen(false), [pathname]);
 
   async function onLogout() {
     setLeaving(true);
     await signOut();
-    router.push("/login?signedOut=1");
+    router.replace("/login?signedOut=1");
+    router.refresh();
   }
-
-  const user = sampleUser; // TODO: the signed-in user's profile from Supabase
 
   return (
     <div className="app">
@@ -36,7 +37,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <Image src="/brand/tsdl-flask-icon.png" alt="" width={36} height={36} />
           <span className="h5">{product.name}</span>
         </Link>
-        <button type="button" className="menu-toggle" style={{ display: "inline-flex" }} aria-expanded={open} aria-controls="app-sidebar" aria-label={open ? "Close menu" : "Open menu"} onClick={() => setOpen((o) => !o)}>
+        <button type="button" className="menu-toggle" style={{ display: "inline-flex" }} aria-expanded={open} aria-controls="app-sidebar" aria-label={open ? "Close menu" : "Open menu"} onClick={() => setOpenOn(open ? null : pathname)}>
           <MenuIcon open={open} />
         </button>
       </div>
@@ -77,7 +78,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <main id="app-main" className="app-main">{children}</main>
+      <main id="app-main" className="app-main">
+        {/* Phase 1: everything below the header is sample data. Remove once real data is wired (Phases 2–8). */}
+        <p className="notice sample-banner" role="note">
+          <strong>Preview.</strong> The numbers, uploads and settings on these pages are sample data. Connections and automation are not live yet.
+        </p>
+        {children}
+      </main>
     </div>
   );
 }

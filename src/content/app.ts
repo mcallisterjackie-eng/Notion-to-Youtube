@@ -19,13 +19,14 @@ export type AppIcon = (typeof appNav)[number]["icon"];
 /** The one plan offered at launch. Keep in sync with the Stripe price. */
 export const plan = {
   name: "Monthly",
-  price: "$10.00",
-  priceShort: "$10",
+  price: "$12.00",
+  priceShort: "$12",
   interval: "month",
   seats: "1 user",
   features: [
     "Connect one Notion workspace and one YouTube channel",
-    "Map title, description, tags, thumbnail and schedule",
+    "Up to 100 videos a month",
+    "Map title, description, tags, visibility and schedule",
     "Automatic uploads when a status changes",
     "Upload history and analytics",
   ],
@@ -88,7 +89,6 @@ export const sampleAutomation: AutomationSettings = {
     title: "Name",
     description: "Script summary",
     tags: "Keywords",
-    thumbnail: "Thumbnail",
     publishAt: "Publish date",
     privacy: "Visibility",
   },
@@ -121,8 +121,8 @@ export const sampleSubscription = {
   renewsOn: "Nov 12, 2026",
   card: { brand: "Visa", last4: "4242", expires: "08/28" },
   invoices: [
-    { date: "Oct 12, 2026", amount: "$10.00", status: "Paid" },
-    { date: "Sep 12, 2026", amount: "$10.00", status: "Paid" },
+    { date: "Oct 12, 2026", amount: "$12.00", status: "Paid" },
+    { date: "Sep 12, 2026", amount: "$12.00", status: "Paid" },
   ],
 };
 
@@ -131,7 +131,6 @@ export const sampleNotionProperties = [
   { name: "Name", type: "Title" },
   { name: "Script summary", type: "Text" },
   { name: "Keywords", type: "Multi-select" },
-  { name: "Thumbnail", type: "Files" },
   { name: "Final cut", type: "Files" },
   { name: "Publish date", type: "Date" },
   { name: "Visibility", type: "Select" },
@@ -154,7 +153,6 @@ export const youtubeFields = [
   { id: "title", label: "Title", hint: "Up to 100 characters", required: true, accepts: ["Title", "Text"], default: "Name" },
   { id: "description", label: "Description", hint: "Up to 5,000 characters", required: false, accepts: ["Text"], default: "Script summary" },
   { id: "tags", label: "Tags", hint: "Each option becomes a tag", required: false, accepts: ["Multi-select", "Text"], default: "Keywords" },
-  { id: "thumbnail", label: "Thumbnail", hint: "JPG or PNG", required: false, accepts: ["Files", "URL"], default: "Thumbnail" },
   { id: "publishAt", label: "Scheduled time", hint: "Leave empty to publish on upload", required: false, accepts: ["Date"], default: "Publish date" },
   { id: "privacy", label: "Visibility", hint: "Public, unlisted or private", required: false, accepts: ["Select"], default: "Visibility" },
 ];
