@@ -1,0 +1,51 @@
+/*
+ * The Systems Design Lab components (Button, Badge, Card, Input, Progress).
+ * Ported from the design system's components/bundle.css. Keep in sync with it.
+ */
+
+/* Button */
+.sdl-btn { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); padding: var(--space-3) var(--space-6); border-radius: var(--radius-md); border: 2px solid transparent; cursor: pointer; text-decoration: none; transition: background-color .15s ease, border-color .15s ease, color .15s ease; white-space: nowrap; }
+.sdl-btn:focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); }
+.sdl-btn:disabled { opacity: .45; cursor: not-allowed; }
+.sdl-btn-sm { font-size: 14px; line-height: 20px; padding: var(--space-2) var(--space-4); }
+.sdl-btn-primary { background: var(--blue); color: var(--on-blue); }
+.sdl-btn-primary:hover:not(:disabled) { background: var(--link); color: var(--on-blue); }
+.sdl-btn-spectrum { color: var(--on-ink); background: linear-gradient(var(--ink), var(--ink)) padding-box, var(--gradient-signature) border-box; border: 3px solid transparent; }
+.sdl-btn-spectrum:hover:not(:disabled) { color: var(--on-ink); background: linear-gradient(var(--ink), var(--ink)) padding-box, var(--gradient-signature-diagonal) border-box; }
+.sdl-btn-secondary { background: var(--canvas); color: var(--ink); border-color: var(--line-strong); }
+.sdl-btn-secondary:hover:not(:disabled) { background: var(--surface); color: var(--ink); }
+.sdl-btn-ghost { background: transparent; color: var(--link); }
+.sdl-btn-ghost:hover:not(:disabled) { background: var(--blue-soft); color: var(--link); }
+
+/* Badge */
+.sdl-badge { display: inline-flex; align-items: center; font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 600; padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm); background: var(--line); color: var(--ink); white-space: nowrap; }
+.sdl-badge-action { background: var(--blue-soft); color: var(--link); }
+.sdl-badge-product { background: var(--violet-soft); color: var(--accent-text); }
+.sdl-badge-highlight { background: var(--orange); color: var(--on-warm); }
+.sdl-badge-attention { background: var(--yellow); color: var(--on-warm); }
+
+/* Card */
+.sdl-card { position: relative; overflow: hidden; background: var(--surface); color: var(--ink); border-radius: var(--radius-lg); padding: var(--space-6); }
+.sdl-card-raised { background: var(--canvas); border: 1px solid var(--line); box-shadow: var(--shadow-sm); }
+.sdl-card-accent::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 4px; background: var(--gradient-signature); }
+.sdl-card-eyebrow { margin: 0 0 var(--space-2); font-family: var(--font-display); font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: .16em; color: var(--accent-text); }
+.sdl-card-title { margin: 0 0 var(--space-2); font-family: var(--font-display); font-size: 20px; line-height: 28px; font-weight: 700; color: var(--ink); }
+.sdl-card-body { margin: 0; font-size: 16px; line-height: 24px; color: var(--ink-muted); }
+.sdl-card-footer { margin-top: var(--space-6); display: flex; gap: var(--space-2); align-items: center; }
+
+/* Input (also used for <select> and <textarea>) */
+.sdl-field { display: flex; flex-direction: column; gap: var(--space-2); font-family: var(--font-sans); }
+.sdl-field-label { font-size: 14px; line-height: 20px; font-weight: 500; color: var(--ink); }
+.sdl-input { font: inherit; font-size: 16px; line-height: 24px; color: var(--ink); background: var(--canvas); border: 1px solid var(--line-strong); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); width: 100%; box-sizing: border-box; }
+.sdl-input::placeholder { color: var(--ink-muted); }
+.sdl-input:hover:not(:disabled) { border-color: var(--ink-muted); }
+.sdl-input:focus { outline: 2px solid transparent; border-color: var(--focus); box-shadow: var(--focus-ring); }
+.sdl-input:disabled { opacity: .45; cursor: not-allowed; }
+.sdl-field-hint { font-size: 12px; line-height: 16px; font-weight: 500; color: var(--ink-muted); }
+
+/* Progress */
+.sdl-progress { display: flex; flex-direction: column; gap: var(--space-2); font-family: var(--font-sans); }
+.sdl-progress-head { display: flex; justify-content: space-between; font-size: 14px; line-height: 20px; font-weight: 500; color: var(--ink); }
+.sdl-progress-value { color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+.sdl-progress-track { height: 8px; border-radius: var(--radius-full); background: var(--line); overflow: hidden; }
+.sdl-progress-fill { height: 100%; border-radius: var(--radius-full); background: var(--gradient-signature); }

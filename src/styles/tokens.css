@@ -1,0 +1,90 @@
+/*
+ * The Systems Design Lab: design tokens.
+ * Source of truth: the "The Systems Design Lab" design system (tokens.json).
+ * Build UI from the semantic tokens (canvas, surface, ink, link...) and keep the
+ * raw brand colours for brand moments.
+ *
+ * Light theme only for now: the logo files have a white background baked in,
+ * so a dark theme waits on a reversed logo. Dark values are kept in
+ * [data-theme="dark"] below, ready for the SaaS app.
+ */
+:root {
+  /* Brand colours */
+  --blue: #1677ff;
+  --cyan: #16cff2;
+  --violet: #7a35f2;
+  --magenta: #e83dcc;
+  --coral: #ff5b6e;
+  --orange: #ff9f1c;
+  --yellow: #ffc928;
+  --charcoal: #18202a;
+  --cloud: #f5f7fa;
+  --white: #ffffff;
+
+  /* Semantic */
+  --canvas: var(--white);
+  --surface: var(--cloud);
+  --line: #e3e8ef;
+  --line-strong: #7d8796;
+  --ink: var(--charcoal);
+  --ink-muted: #5b6675;
+  --on-ink: var(--white);
+  --link: #0f5fd6;
+  --link-hover: #0b4aa8;
+  --on-blue: #ffffff;
+  --blue-soft: #e8f1ff;
+  --accent-text: var(--violet);
+  --violet-soft: #f1eafe;
+  --on-warm: #18202a;
+  --focus: #0f5fd6;
+
+  /* Type */
+  --font-display: "Montserrat Variable", Montserrat, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: "Inter Variable", Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Spacing: 8px grid, 4px half-step */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-24: 96px;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 32px;
+  --radius-full: 9999px;
+
+  /* Shadow */
+  --shadow-sm: 0 1px 2px #18202a14, 0 1px 3px #18202a0f;
+  --shadow-lg: 0 8px 24px -4px #18202a24, 0 2px 6px #18202a14;
+  --focus-ring: 0 0 0 2px #ffffff, 0 0 0 4px #0f5fd6;
+
+  /* Signature gradient: one strong gradient element per view, never behind text */
+  --gradient-signature: linear-gradient(90deg, #16cff2 0%, #1677ff 18%, #7a35f2 40%, #e83dcc 60%, #ff5b6e 76%, #ff9f1c 90%, #ffc928 100%);
+  --gradient-signature-diagonal: linear-gradient(135deg, #16cff2 0%, #1677ff 20%, #7a35f2 42%, #e83dcc 62%, #ff5b6e 78%, #ff9f1c 90%, #ffc928 100%);
+}
+
+[data-theme="dark"] {
+  --canvas: var(--charcoal);
+  --surface: #222c38;
+  --line: #334050;
+  --line-strong: #6b7787;
+  --ink: var(--cloud);
+  --ink-muted: #a7b1be;
+  --on-ink: var(--charcoal);
+  --link: #5aa2ff;
+  --link-hover: #8dbfff;
+  --blue-soft: #1b3358;
+  --accent-text: #b794ff;
+  --violet-soft: #2e2350;
+  --focus: #5aa2ff;
+  --shadow-sm: 0 1px 3px #00000099;
+  --shadow-lg: 0 12px 32px -4px #000000cc;
+  --focus-ring: 0 0 0 2px #18202a, 0 0 0 4px #5aa2ff;
+}
