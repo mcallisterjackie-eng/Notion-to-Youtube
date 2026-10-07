@@ -81,7 +81,7 @@ export function AppShell({ user, children }: { user: DisplayUser; children: Reac
       <main id="app-main" className="app-main">
         {/* Phase 1: everything below the header is sample data. Remove once real data is wired (Phases 2–8). */}
         <p className="notice sample-banner" role="note">
-          <strong>Preview.</strong> Apart from My Profile, the numbers, uploads and settings on these pages are sample data. Connections and automation are not live yet.
+          <strong>Preview.</strong> Apart from Setup, Connections and My Profile, the numbers, uploads and settings on these pages are sample data. Automation is not live yet.
         </p>
         {children}
       </main>

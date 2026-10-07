@@ -16,8 +16,41 @@ const USERS = [
   { id: "00000000-0000-4000-8000-000000000001", email: "creator@example.com", password: "correct-horse-battery", full_name: "Riley Morgan", providers: ["email"], timezone: "America/Edmonton" },
   { id: "00000000-0000-4000-8000-000000000002", email: "google-user@example.com", password: "test-only-google-standin", full_name: "Gale Google", providers: ["google"], timezone: "UTC" },
   { id: "00000000-0000-4000-8000-000000000003", email: "pw-change@example.com", password: "old-password-123", full_name: "Pat Change", providers: ["email"], timezone: "UTC" },
+  { id: "00000000-0000-4000-8000-000000000004", email: "connector@example.com", password: "connect-me-please", full_name: "Casey Connect", providers: ["email"], timezone: "UTC" },
+  { id: "00000000-0000-4000-8000-000000000005", email: "neighbour@example.com", password: "neighbour-password", full_name: "Nico Neighbour", providers: ["email"], timezone: "UTC" },
 ];
-const accounts = new Map(USERS.map((u) => [u.id, { id: `acc-${u.id}`, name: u.full_name, timezone: u.timezone, automation_status: "inactive" }]));
+const accounts = new Map(USERS.map((u) => [u.id, { id: `acc-${u.id}`, name: u.full_name, timezone: u.timezone, timezone_confirmed_at: null, automation_status: "inactive" }]));
+
+// ---- Database state for the connection tests (one set per account, like the real tables) ----
+const SECRET_KEY = "sb_secret_test_only";
+const PROVIDER_LIST = ["notion", "youtube", "google_drive"];
+const blankConnection = (accountId, provider) => ({
+  id: `conn-${provider}-${accountId}`, account_id: accountId, provider, status: "not_connected",
+  external_account_id: null, external_account_name: null, granted_scopes: [], connected_at: null,
+  last_checked_at: null, last_error_code: null, last_error_message: null,
+  created_at: "2026-10-01T00:00:00Z", updated_at: "2026-10-01T00:00:00Z",
+});
+const connections = new Map(); // `${accountId}:${provider}` -> row
+const secrets = new Map(); // `${accountId}:${provider}` -> text
+const dataSources = new Map(); // accountId -> row
+function resetDb() {
+  connections.clear(); secrets.clear(); dataSources.clear();
+  for (const a of accounts.values()) {
+    a.timezone_confirmed_at = null;
+    for (const p of PROVIDER_LIST) connections.set(`${a.id}:${p}`, blankConnection(a.id, p));
+  }
+}
+resetDb();
+
+// ---- Notion / Google behaviour the tests can switch (POST /__mock/config) ----
+let mockConfig = {};
+function resetProviders() {
+  mockConfig = { notionDeny: false, googleDeny: false, googleScopes: "all", noChannel: false, rejectTokens: false };
+}
+resetProviders();
+const issued = new Map(); // auth code -> { challenge, scopes, provider }
+const validProviderTokens = new Set();
+const sha256url = async (v) => Buffer.from(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(v))).toString("base64url");
 
 const b64url = (obj) => Buffer.from(JSON.stringify(obj)).toString("base64url");
 const tokens = new Map(); // access token -> user id
@@ -107,11 +140,149 @@ const server = createServer(async (req, res) => {
   }
   if (url.pathname === "/auth/v1/recover" && req.method === "POST") return send(res, 200, {});
 
-  // ---- REST (only the caller's rows, like RLS) ----
+  // ---- Test controls ----
+  if (url.pathname === "/__mock/reset" && req.method === "POST") { resetDb(); resetProviders(); return send(res, 204); }
+  if (url.pathname === "/__mock/config" && req.method === "POST") { Object.assign(mockConfig, await readJson(req)); return send(res, 204); }
+  if (url.pathname === "/__mock/state" && req.method === "GET") {
+    return send(res, 200, { connections: [...connections.values()], secrets: [...secrets.keys()], dataSources: [...dataSources.values()] });
+  }
+
+  // ---- Notion ----
+  if (url.pathname === "/notion/authorize") {
+    const back = new URL(url.searchParams.get("redirect_uri"));
+    back.searchParams.set("state", url.searchParams.get("state") ?? "");
+    if (mockConfig.notionDeny) back.searchParams.set("error", "access_denied");
+    else {
+      const code = `notion-code-${Math.random().toString(36).slice(2)}`;
+      issued.set(code, { provider: "notion" });
+      back.searchParams.set("code", code);
+    }
+    res.writeHead(302, { location: back.toString() });
+    return res.end();
+  }
+  if (url.pathname === "/notion/v1/oauth/token" && req.method === "POST") {
+    if (req.headers.authorization !== `Basic ${Buffer.from("notion-test-client:notion-test-secret").toString("base64")}`) return send(res, 401, { error: "invalid_client" });
+    const body = await readJson(req);
+    if (body.grant_type === "authorization_code" && issued.get(body.code)?.provider === "notion") {
+      issued.delete(body.code);
+      const access = `notion-access-${Math.random()}`;
+      validProviderTokens.add(access);
+      return send(res, 200, { access_token: access, refresh_token: `notion-refresh-${Math.random()}`, token_type: "bearer", workspace_id: "ws-123", workspace_name: "Creator Studio", bot_id: "bot-1" });
+    }
+    return send(res, 400, { error: "invalid_grant" });
+  }
+  if (url.pathname === "/notion/v1/oauth/revoke" && req.method === "POST") {
+    const body = await readJson(req);
+    validProviderTokens.delete(body.token);
+    return send(res, 200, {});
+  }
+  if (url.pathname.startsWith("/notion/v1/")) {
+    const token = (req.headers.authorization ?? "").replace(/^Bearer\s+/i, "");
+    if (mockConfig.rejectTokens || !validProviderTokens.has(token)) return send(res, 401, { object: "error", status: 401, code: "unauthorized", message: "API token is invalid." });
+    if (req.headers["notion-version"] !== "2025-09-03") return send(res, 400, { object: "error", status: 400, code: "missing_version" });
+    if (url.pathname === "/notion/v1/users/me") return send(res, 200, { object: "user", type: "bot", bot: { workspace_name: "Creator Studio" } });
+    if (url.pathname === "/notion/v1/search" && req.method === "POST") {
+      const ds = (id, name, db) => ({ object: "data_source", id, title: [{ plain_text: name }], parent: { type: "database_id", database_id: db } });
+      return send(res, 200, { object: "list", results: [ds("ds-content", "Content calendar", "db-1"), ds("ds-ideas", "Video ideas", "db-2")], has_more: false, next_cursor: null });
+    }
+  }
+
+  // ---- Google ----
+  if (url.pathname === "/google/auth") {
+    const back = new URL(url.searchParams.get("redirect_uri"));
+    back.searchParams.set("state", url.searchParams.get("state") ?? "");
+    if (mockConfig.googleDeny) back.searchParams.set("error", "access_denied");
+    else {
+      const requested = (url.searchParams.get("scope") ?? "").split(" ");
+      // "partial": the person unticks one box on Google's screen.
+      const scopes = mockConfig.googleScopes === "partial" ? requested.slice(0, 1) : requested;
+      const code = `google-code-${Math.random().toString(36).slice(2)}`;
+      issued.set(code, { provider: "google", challenge: url.searchParams.get("code_challenge"), scopes, offline: url.searchParams.get("access_type") === "offline" });
+      back.searchParams.set("code", code);
+    }
+    res.writeHead(302, { location: back.toString() });
+    return res.end();
+  }
+  if (url.pathname === "/google/token" && req.method === "POST") {
+    let raw = ""; for await (const chunk of req) raw += chunk;
+    const body = Object.fromEntries(new URLSearchParams(raw));
+    if (body.client_id !== "google-test-client" || body.client_secret !== "google-test-secret") return send(res, 401, { error: "invalid_client" });
+    if (body.grant_type === "authorization_code") {
+      const grant = issued.get(body.code);
+      if (!grant || grant.provider !== "google") return send(res, 400, { error: "invalid_grant" });
+      issued.delete(body.code);
+      if (!body.code_verifier || (await sha256url(body.code_verifier)) !== grant.challenge) return send(res, 400, { error: "invalid_grant", error_description: "PKCE verification failed" });
+      const access = `google-access-${Math.random()}`;
+      validProviderTokens.add(access);
+      return send(res, 200, { access_token: access, refresh_token: grant.offline ? `google-refresh-${Math.random()}` : undefined, expires_in: 3599, scope: grant.scopes.join(" "), token_type: "Bearer" });
+    }
+    if (body.grant_type === "refresh_token") {
+      if (mockConfig.rejectTokens) return send(res, 400, { error: "invalid_grant" });
+      const access = `google-access-${Math.random()}`;
+      validProviderTokens.add(access);
+      return send(res, 200, { access_token: access, expires_in: 3599, token_type: "Bearer" });
+    }
+    return send(res, 400, { error: "unsupported_grant_type" });
+  }
+  if (url.pathname === "/google/revoke" && req.method === "POST") return send(res, 200, {});
+  if (url.pathname.startsWith("/google/api/")) {
+    const token = (req.headers.authorization ?? "").replace(/^Bearer\s+/i, "");
+    if (mockConfig.rejectTokens || !validProviderTokens.has(token)) return send(res, 401, { error: { code: 401, status: "UNAUTHENTICATED", errors: [{ reason: "authError" }] } });
+    if (url.pathname === "/google/api/youtube/v3/channels") {
+      return send(res, 200, mockConfig.noChannel ? { items: [] } : { items: [{ id: "UC-test-channel", snippet: { title: "Creator Studio Channel" } }] });
+    }
+    if (url.pathname === "/google/api/drive/v3/about") return send(res, 200, { user: { displayName: "Casey Connect", emailAddress: "casey.drive@example.com" } });
+  }
+
+  // ---- Supabase REST ----
   if (url.pathname.startsWith("/rest/v1/")) {
+    const table = url.pathname.slice("/rest/v1/".length);
+    const isAdmin = req.headers.apikey === SECRET_KEY;
+
+    // Trusted server code (secret key): like the service role, sees everything it filters for.
+    if (isAdmin) {
+      const acc = eqParam(url, "account_id");
+      if (table === "rpc/store_connection_secret") {
+        const b = await readJson(req);
+        if (!connections.has(`${b.p_account_id}:${b.p_provider}`)) return send(res, 400, { code: "P0001", message: "connection not found" });
+        secrets.set(`${b.p_account_id}:${b.p_provider}`, b.p_secret);
+        return send(res, 204);
+      }
+      if (table === "rpc/read_connection_secret") {
+        const b = await readJson(req);
+        return send(res, 200, secrets.get(`${b.p_account_id}:${b.p_provider}`) ?? null);
+      }
+      if (table === "rpc/delete_connection_secret") {
+        const b = await readJson(req);
+        secrets.delete(`${b.p_account_id}:${b.p_provider}`);
+        return send(res, 204);
+      }
+      if (table === "connections" && req.method === "PATCH") {
+        const key = `${acc}:${eqParam(url, "provider")}`;
+        if (connections.has(key)) connections.set(key, { ...connections.get(key), ...(await readJson(req)) });
+        return send(res, 204);
+      }
+      if (table === "data_sources" && req.method === "POST") {
+        const b = await readJson(req);
+        if (dataSources.has(b.account_id)) return send(res, 409, { code: "23505", message: "duplicate key value violates unique constraint" });
+        dataSources.set(b.account_id, { id: `dsrow-${Math.random()}`, created_at: "2026-10-07T00:00:00Z", updated_at: "2026-10-07T00:00:00Z", properties_snapshot: null, properties_synced_at: null, ...b });
+        return send(res, 201);
+      }
+      if (table === "data_sources" && req.method === "PATCH") {
+        const row = dataSources.get(acc);
+        if (row && row.id === eqParam(url, "id")) dataSources.set(acc, { ...row, ...(await readJson(req)) });
+        return send(res, 204);
+      }
+      if (table === "data_sources" && req.method === "DELETE") {
+        dataSources.delete(acc);
+        return send(res, 204);
+      }
+      return send(res, 404, { message: `mock admin: ${req.method} ${table}` });
+    }
+
+    // Signed-in customer (publishable key + session): only their own account's rows, like RLS.
     const u = caller(req);
     if (!u) return send(res, 401, { code: "PGRST301", message: "JWT required" });
-    const table = url.pathname.slice("/rest/v1/".length);
     const account = accounts.get(u.id);
 
     if (table === "profiles" && req.method === "GET") {
@@ -128,8 +299,18 @@ const server = createServer(async (req, res) => {
     if (table === "accounts" && req.method === "PATCH") {
       const body = await readJson(req);
       if (body.timezone !== undefined && !validTz(body.timezone)) return send(res, 400, { code: "23514", message: "violates check constraint" });
-      if (eqParam(url, "id") === account.id && body.timezone) account.timezone = body.timezone;
+      if (eqParam(url, "id") === account.id) {
+        if (body.timezone) account.timezone = body.timezone;
+        if (body.timezone_confirmed_at) account.timezone_confirmed_at = body.timezone_confirmed_at;
+      }
       return send(res, 204);
+    }
+    if (table === "connections" && req.method === "GET") {
+      return send(res, 200, eqParam(url, "account_id") === account.id ? PROVIDER_LIST.map((p) => connections.get(`${account.id}:${p}`)) : []);
+    }
+    if (table === "data_sources" && req.method === "GET") {
+      const row = dataSources.get(account.id);
+      return send(res, 200, eqParam(url, "account_id") === account.id && row ? [row] : []);
     }
   }
 

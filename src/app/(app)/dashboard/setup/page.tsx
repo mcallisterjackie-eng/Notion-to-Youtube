@@ -86,7 +86,7 @@ export default async function SetupPage({ searchParams }: { searchParams: Promis
           </div>
 
           {step === "notion" || step === "youtube" || step === "google_drive" ? (
-            <ConnectionCard provider={step} data={toCardData(connections[step])} available={available[step]} returnTo={returnTo} timeZone={me.account.timezone} />
+            <ConnectionCard provider={step} data={toCardData(connections[step])} available={available[step]} returnTo={returnTo} timeZone={me.account.timezone} emphasis="primary" />
           ) : null}
 
           {step === "database" ? (

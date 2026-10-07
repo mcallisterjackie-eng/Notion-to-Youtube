@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { appUrl } from "@/lib/app-url";
 import { getCurrentAccount } from "@/lib/account";
 import { completeConnection } from "@/lib/connections";
 import { isProvider } from "@/lib/integrations/config";
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const sealed = request.cookies.get(STATE_COOKIE)?.value;
 
   const finish = (returnTo: string, outcome: { connected: true } | { error: string }) => {
-    const url = new URL(safeNextPath(returnTo, "/dashboard/connections").split("?")[0], request.url);
+    const url = appUrl(safeNextPath(returnTo, "/dashboard/connections").split("?")[0], request.url);
     if ("connected" in outcome) url.searchParams.set("connected", provider);
     else {
       url.searchParams.set("connectError", outcome.error);
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   };
 
   const me = await getCurrentAccount();
-  if (!me) return NextResponse.redirect(new URL(`${LOGIN_PATH}?next=/dashboard/connections`, request.url));
+  if (!me) return NextResponse.redirect(appUrl(`${LOGIN_PATH}?next=/dashboard/connections`, request.url));
 
   const check = verifyState(sealed, { provider, state: sp.get("state"), userId: me.userId });
   if (!check.ok) {

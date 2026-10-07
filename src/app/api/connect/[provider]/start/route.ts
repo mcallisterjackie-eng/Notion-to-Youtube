@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { appUrl } from "@/lib/app-url";
 import { getCurrentAccount } from "@/lib/account";
 import { configuredProviders, isProvider } from "@/lib/integrations/config";
 import { googleAuthorizeUrl } from "@/lib/integrations/google";
@@ -15,12 +16,12 @@ import { LOGIN_PATH, safeNextPath } from "@/lib/routes";
 export async function GET(request: NextRequest, { params }: { params: Promise<{ provider: string }> }) {
   const { provider } = await params;
   const returnTo = safeNextPath(request.nextUrl.searchParams.get("returnTo"), "/dashboard/connections");
-  const back = (code: string) => NextResponse.redirect(new URL(`${returnTo.split("?")[0]}?connectError=${code}&provider=${provider}`, request.url));
+  const back = (code: string) => NextResponse.redirect(appUrl(`${returnTo.split("?")[0]}?connectError=${code}&provider=${provider}`, request.url));
 
   if (!isProvider(provider)) return NextResponse.json({ error: "unknown service" }, { status: 404 });
 
   const me = await getCurrentAccount();
-  if (!me) return NextResponse.redirect(new URL(`${LOGIN_PATH}?next=${encodeURIComponent(returnTo)}`, request.url));
+  if (!me) return NextResponse.redirect(appUrl(`${LOGIN_PATH}?next=${encodeURIComponent(returnTo)}`, request.url));
   if (!configuredProviders()[provider]) return back("not_configured");
 
   try {

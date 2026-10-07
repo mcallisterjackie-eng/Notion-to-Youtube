@@ -6,7 +6,7 @@ app is the automation layer between Notion, Google Drive and YouTube.
 
 This repository also contains the public marketing site.
 
-> **Status:** Phase 2 (database & security) of 10. See [`docs/PHASES.md`](docs/PHASES.md).
+> **Status:** Phase 3 (onboarding & connections) of 10. See [`docs/PHASES.md`](docs/PHASES.md).
 
 ## Documents
 
@@ -19,6 +19,7 @@ This repository also contains the public marketing site.
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | How the code is organised and why |
 | [`docs/DATABASE.md`](docs/DATABASE.md) | Tables, access rules and database tests |
 | [`docs/SETUP_AUTH.md`](docs/SETUP_AUTH.md) | Supabase Auth and Google sign-in settings |
+| [`docs/SETUP_CONNECTIONS.md`](docs/SETUP_CONNECTIONS.md) | Notion, YouTube and Google Drive connection setup, step by step |
 | [`docs/PHASES.md`](docs/PHASES.md) | What each phase delivered |
 
 ## Run it locally
@@ -39,7 +40,7 @@ npm run dev                  # http://localhost:3000
 | `npm run lint` | ESLint (Next.js rules) |
 | `npm test` | Unit tests (Vitest) |
 | `npm run test:db` | Applies every migration to a throwaway local PostgreSQL and runs the security tests |
-| `npm run test:e2e` | Browser tests on desktop and phone (Playwright). Builds the app and uses a local stand-in for Supabase Auth, so no secrets or network are needed |
+| `npm run test:e2e` | Browser tests on desktop and phone (Playwright). Builds the app and uses local stand-ins for Supabase, Notion and Google, so no secrets or network are needed |
 | `npm run check` | typecheck + lint + unit tests + build |
 
 GitHub Actions runs all of these on every pull request.
@@ -48,9 +49,9 @@ GitHub Actions runs all of these on every pull request.
 
 - **Public:** `/` (product landing page), `/products`, `/videos`, `/about`, `/contact`, `/privacy`, `/terms`
 - **Sign-in:** `/login`, `/signup`, `/forgot-password`, `/reset-password`
-- **Dashboard (signed in):** `/dashboard` (Overview), `/dashboard/profile`, `/dashboard/analytics`, `/dashboard/billing`, `/dashboard/connections`, `/dashboard/field-mapping`
+- **Dashboard (signed in):** `/dashboard` (Overview), `/dashboard/setup`, `/dashboard/profile`, `/dashboard/analytics`, `/dashboard/billing`, `/dashboard/connections`, `/dashboard/field-mapping`
 
-Dashboard pages other than My Profile show **sample data** (from `src/content/app.ts`, with a banner saying so) until the phases that make them real.
+Apart from Setup, Connections and My Profile, dashboard pages show **sample data** (from `src/content/app.ts`, with a banner saying so) until the phases that make them real.
 
 ## Where to edit content
 

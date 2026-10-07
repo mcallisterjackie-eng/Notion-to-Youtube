@@ -22,3 +22,7 @@ Some pages and elements will be redone as the SaaS is built, to match
 | 1 | "Continue with Google" on log in and sign up | Owner decision |
 | 1 | Sample-data banner on every dashboard page | Dashboard numbers are placeholders until later phases |
 | 1 | Grids and table scroll areas fixed so no page scrolls sideways on phones | Bug found by the Phase 1 browser tests |
+| 3 | New **Setup** page (`/dashboard/setup`): six skippable onboarding steps; new sign-ups land there | Design Spec §20 |
+| 3 | Connections page: real data, **Google Drive** card added, statuses Connected / Not connected / Connection error / Permission problem, Check connection, Disconnect with confirmation, Content calendar picker | Design Spec §2, §20, §22; Development Plan Phase 3 |
+| 3 | Overview Setup card reflects real progress (connections, database, time zone); "Map your fields" / "Upload your first video" items move to later phases | Real data replaces sample |
+| 3 | On Connections, Connect buttons are secondary (several cards per view); on Setup the single card's button is primary | Brand: one primary button per view |

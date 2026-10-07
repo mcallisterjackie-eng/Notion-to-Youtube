@@ -1,6 +1,6 @@
 # Architecture
 
-Current state: **end of Phase 2 (database & security)**. Later phases add to this
+Current state: **end of Phase 3 (onboarding & connections)**. Later phases add to this
 document; see `PHASES.md` for what each phase delivered.
 
 ## Stack
@@ -46,12 +46,32 @@ misconfigured, the other still blocks access.
 
 ## Security decisions so far
 
-- Browser holds only the Supabase **publishable** key. No secret keys are used yet.
+- Browser holds only the Supabase **publishable** key. Server-only secrets (Supabase secret key, Notion/Google client secrets, state secret) are never `NEXT_PUBLIC_` and never leave the server.
 - Every table has Row Level Security; server code finds the account with `getCurrentAccount()` and never trusts an account ID from the browser (`DATABASE.md`).
 - Identity on the server comes from `supabase.auth.getClaims()` (signature-verified), never from IDs sent by the browser (Design Spec §25).
 - Redirect targets after sign-in are restricted to same-site paths (`safeNextPath`).
 - Errors shown to people are plain English; technical details go to logs only (`src/lib/log.ts`, `ErrorState`).
 - `.env.local` is git-ignored; `.env.example` lists every variable.
+
+## Connecting a service (Phase 3)
+
+```text
+Connect button ─► /api/connect/<service>/start
+                    ├ signed in? (getCurrentAccount)
+                    ├ random state + PKCE verifier ─► encrypted, HTTP-only cookie (10 min, one use)
+                    └ 302 to Notion / Google approval screen
+Service ─► /api/connect/<service>/callback?code&state
+                    ├ state matches cookie, fresh, same person, same service
+                    ├ exchange code (+ PKCE verifier) for tokens
+                    ├ tokens ─► Vault via store_connection_secret (service role)
+                    ├ health check (Notion bot user / YouTube channel / Drive about)
+                    └ connection row updated (status, account name, scopes) ─► back to Setup or Connections
+```
+
+Tokens are refreshed shortly before expiry (`getAccessToken`), Notion's rotating
+refresh token is stored each time, and Disconnect revokes with the service before
+deleting our copy. Failures are classified (reconnect needed, permission problem,
+temporary) and shown in plain English (`src/lib/connection-messages.ts`).
 
 ## Where things live
 
@@ -66,6 +86,12 @@ misconfigured, the other still blocks access.
 | Auth | see `docs/SETUP_AUTH.md` |
 | Current person + account (server) | `src/lib/account.ts` |
 | Database types (generated) | `src/lib/database.types.ts` |
+| Service settings, scopes, endpoints | `src/lib/integrations/config.ts` |
+| Notion / Google clients | `src/lib/integrations/notion.ts`, `google.ts` |
+| Connection lifecycle | `src/lib/connections.ts` |
+| OAuth state protection | `src/lib/oauth/state.ts` |
+| Connect routes | `src/app/api/connect/[provider]/{start,callback}` |
+| Onboarding | `src/app/(app)/dashboard/setup`, `src/lib/setup.ts` |
 
 ## Sample data
 

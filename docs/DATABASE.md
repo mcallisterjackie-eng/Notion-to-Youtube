@@ -1,7 +1,7 @@
 # Database
 
 Supabase PostgreSQL. Schema lives in `supabase/migrations/` (applied in filename
-order); security tests in `supabase/tests/`. Current state: **end of Phase 2**.
+order); security tests in `supabase/tests/`. Current state: **end of Phase 3**.
 
 Project: `egogfmjojgcsbojbglsn` (used as the development database until a
 separate production project is created in Phase 10).
@@ -34,7 +34,7 @@ auth.users ──1:1── profiles
 | Table | Purpose | Customer access |
 | --- | --- | --- |
 | `profiles` | Person's name | Read/update own `full_name` |
-| `accounts` | Name, **time zone** (§13), **automation status** and **activation time** (§18, §19) | Read; update `name`, `timezone` only |
+| `accounts` | Name, **time zone** (§13) and when it was confirmed in onboarding, **automation status** and **activation time** (§18, §19) | Read; update `name`, `timezone`, `timezone_confirmed_at` only |
 | `account_members` | Who belongs to which account; role `owner` (MVP) | Read own memberships |
 | `subscriptions` | Plan, status (`none`/`active`/`past_due`/`canceled`/`expired`), period, Stripe IDs | Read |
 | `usage_periods` | Videos counted per billing period, limit 100 | Read |
@@ -57,6 +57,15 @@ auth.users ──1:1── profiles
 - **Job history survives** switching Notion databases (the reference is cleared, the jobs stay).
 - **MVP limits** (`connections_one_per_provider`, `data_sources_one_per_account`) are named constraints, easy to drop later.
 
+### Token functions (Phase 3)
+
+`store_connection_secret(account, provider, secret)`, `read_connection_secret(account, provider)`,
+`delete_connection_secret(account, provider)`: the only way to touch tokens.
+Executable by the **service role only** (not customers, not anon). They address a
+connection by account + provider, which server code takes from the verified
+session, so a token cannot be written to or read from another account's
+connection. Re-storing (token refresh) updates the same Vault secret.
+
 ### Deliberately open
 
 - **Job states** are checked text, not an enum, because "accepted by YouTube" vs "processing complete" (§12) is undecided.
@@ -67,7 +76,7 @@ auth.users ──1:1── profiles
 
 - Server code gets the person and account from `getCurrentAccount()` (`src/lib/account.ts`), which uses the verified session and reads through RLS. **Never** take an account ID from the browser to decide whose data to touch (§25).
 - Writes customers may make go through Server Actions with the user's session (RLS applies).
-- The service-role ("secret") key is **not used yet**. It arrives in Phase 3, server-side only, for token storage.
+- The secret key is used only by `src/lib/supabase/admin.ts` (server-only), for writes customers may not make: connection status, data source selection and the token functions. Every admin query filters by the account from `getCurrentAccount()`.
 
 ## Testing
 
@@ -81,6 +90,7 @@ migration, then runs:
 
 - `10_rls_isolation.sql`: customers A and B; A sees only A's rows in every table, cannot change, delete or insert into B's account, cannot attach rows to B's parents, cannot read tokens or technical error detail, cannot flip automation, subscription, usage, connection, job or mapping-validity state; `anon` reads nothing.
 - `20_account_lifecycle.sql`: sign-up by email, Google and with no details; time zone validation; deleting a person.
+- `30_connection_secrets.sql`: only the service role can store/read/delete tokens; tokens are separate per account; rotation reuses one Vault secret; customers may confirm their time zone.
 
 The same files were run against the real project (inside a rolled-back
 transaction). The Supabase tool asks a person to confirm any DELETE, so the

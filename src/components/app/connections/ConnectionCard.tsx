@@ -22,8 +22,8 @@ export type ConnectionCardData = {
 };
 
 /** A full-page link styled as the primary button: connecting leaves the app for Notion/Google. */
-function ConnectLink({ href, children }: { href: string; children: React.ReactNode }) {
-  return <a href={href} className="sdl-btn sdl-btn-primary">{children}</a>;
+function ConnectLink({ href, emphasis, children }: { href: string; emphasis: "primary" | "secondary"; children: React.ReactNode }) {
+  return <a href={href} className={`sdl-btn sdl-btn-${emphasis}`}>{children}</a>;
 }
 
 type ConnectionRow = {
@@ -46,7 +46,7 @@ export function toCardData(c: ConnectionRow | null): ConnectionCardData {
 
 function formatDate(iso: string | null, timeZone: string) {
   if (!iso) return null;
-  return new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short", timeZone }).format(new Date(iso));
+  return new Intl.DateTimeFormat("en", { year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZoneName: "short", timeZone }).format(new Date(iso));
 }
 
 /** One service on the Connections page and in Setup: status, account, health, and the right next action. */
@@ -58,6 +58,7 @@ export function ConnectionCard({
   timeZone,
   extra,
   disconnectWarning,
+  emphasis = "secondary",
 }: {
   provider: ProviderKey;
   data: ConnectionCardData;
@@ -67,6 +68,8 @@ export function ConnectionCard({
   timeZone: string;
   extra?: React.ReactNode;
   disconnectWarning?: string;
+  /** Brand rule: one primary button per view. Setup shows one card, so it passes "primary". */
+  emphasis?: "primary" | "secondary";
 }) {
   const name = PROVIDER_NAMES[provider];
   const connectHref = `/api/connect/${provider}/start?returnTo=${encodeURIComponent(returnTo)}`;
@@ -101,10 +104,10 @@ export function ConnectionCard({
         {!available ? (
           <p className="caption">Connecting {name} is not available yet.</p>
         ) : data.status === "not_connected" ? (
-          <div className="row"><ConnectLink href={connectHref}>Connect {name}</ConnectLink></div>
+          <div className="row"><ConnectLink href={connectHref} emphasis={emphasis}>Connect {name}</ConnectLink></div>
         ) : (
           <>
-            {data.status !== "connected" ? <div className="row"><ConnectLink href={connectHref}>Reconnect {name}</ConnectLink></div> : extra}
+            {data.status !== "connected" ? <div className="row"><ConnectLink href={connectHref} emphasis={emphasis}>Reconnect {name}</ConnectLink></div> : extra}
             <ConnectionActions provider={provider} name={name} disconnectWarning={disconnectWarning} />
           </>
         )}
