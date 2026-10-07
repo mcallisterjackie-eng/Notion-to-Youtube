@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getSessionClaims } from "@/lib/session";
+import { getCurrentAccount } from "@/lib/account";
 import { toDisplayUser } from "@/lib/user";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
@@ -12,7 +12,8 @@ import { describeFilter, sampleAutomation, sampleConnections, sampleSetup, sampl
 export const metadata: Metadata = { title: "Overview" };
 
 export default async function OverviewPage() {
-  const first = toDisplayUser(await getSessionClaims()).name.split(" ")[0];
+  const me = await getCurrentAccount();
+  const first = toDisplayUser(me && { email: me.email, user_metadata: { full_name: me.profile.full_name } }).name.split(" ")[0];
   // The Automation card reads the same saved settings that Connections and Field Mapping edit.
   const auto = sampleAutomation;
   const { notion, youtube } = sampleConnections;

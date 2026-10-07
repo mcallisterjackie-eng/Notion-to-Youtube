@@ -19,6 +19,14 @@ function callbackUrl(next: string) {
   return `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeNextPath(next))}`;
 }
 
+function browserTimezone(): string | undefined {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  } catch {
+    return undefined;
+  }
+}
+
 function fail(event: string, err: unknown): { ok: false; error: string } {
   const e = err as { code?: string; name?: string; message?: string; status?: number };
   log.warn(event, e?.message ?? "unknown error", { code: e?.code, status: e?.status });
@@ -41,7 +49,8 @@ export async function signUp(name: string, email: string, password: string): Pro
     const { data, error } = await createClient().auth.signUp({
       email,
       password,
-      options: { data: { full_name: name.trim() }, emailRedirectTo: callbackUrl(HOME_PATH) },
+      // The time zone seeds the account setting (Design Spec §13); the database validates it.
+      options: { data: { full_name: name.trim(), timezone: browserTimezone() }, emailRedirectTo: callbackUrl(HOME_PATH) },
     });
     if (error) return fail("auth.signUp", error);
     // With email confirmation on (the Supabase default) there is no session until the link is clicked.
@@ -82,6 +91,36 @@ export async function updatePassword(password: string): Promise<AuthResult> {
     return error ? fail("auth.updatePassword", error) : { ok: true };
   } catch (err) {
     return fail("auth.updatePassword", err);
+  }
+}
+
+/**
+ * Start an email change. Supabase sends a confirmation link (to both the old and
+ * new address when "Secure email change" is on); nothing changes until it is clicked.
+ */
+export async function changeEmail(newEmail: string): Promise<AuthResult> {
+  try {
+    const { error } = await createClient().auth.updateUser({ email: newEmail }, { emailRedirectTo: callbackUrl("/dashboard/profile") });
+    return error ? fail("auth.changeEmail", error) : { ok: true };
+  } catch (err) {
+    return fail("auth.changeEmail", err);
+  }
+}
+
+/** Change password after confirming the current one, so an unattended session cannot be taken over. */
+export async function changePassword(email: string, currentPassword: string, newPassword: string): Promise<AuthResult> {
+  if (newPassword.length < 8) return { ok: false, error: "Use at least 8 characters." };
+  if (newPassword === currentPassword) return { ok: false, error: "Choose a password you have not used before." };
+  try {
+    const supabase = createClient();
+    const check = await supabase.auth.signInWithPassword({ email, password: currentPassword });
+    if (check.error) {
+      return check.error.code === "invalid_credentials" ? { ok: false, error: "Your current password is not right." } : fail("auth.changePassword", check.error);
+    }
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    return error ? fail("auth.changePassword", error) : { ok: true };
+  } catch (err) {
+    return fail("auth.changePassword", err);
   }
 }
 

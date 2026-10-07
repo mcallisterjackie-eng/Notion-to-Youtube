@@ -1,6 +1,6 @@
 # Architecture
 
-Current state: **end of Phase 1 (project foundation)**. Later phases add to this
+Current state: **end of Phase 2 (database & security)**. Later phases add to this
 document; see `PHASES.md` for what each phase delivered.
 
 ## Stack
@@ -9,9 +9,11 @@ document; see `PHASES.md` for what each phase delivered.
 | --- | --- | --- |
 | Frontend + server rendering | Next.js 16 (App Router), React 19, TypeScript | The supplied front-end design (tsdl-site) is built on it; deploys to Vercel as-is |
 | Auth | Supabase Auth via `@supabase/ssr` (cookie sessions) | Design Spec §2 |
-| Database, RLS, Edge Functions | Supabase (from Phase 2) | Design Spec §2 |
+| Database, RLS | Supabase PostgreSQL, migrations in `supabase/migrations` (see `DATABASE.md`) | Design Spec §2 |
+| Edge Functions | Supabase (from the phase that first needs background work) | Design Spec §2 |
 | Styling | Plain CSS with design tokens (`src/styles/tokens.css`) | Mirrors "The Systems Design Lab" design system 1:1; no CSS framework |
 | Unit tests | Vitest | Fast tests of pure logic |
+| Database tests | Plain SQL on a throwaway PostgreSQL (`npm run test:db`) | Proves isolation and lifecycle rules |
 | Browser tests | Playwright (desktop + phone) | Exercises real pages, redirects and layout |
 | CI | GitHub Actions (`.github/workflows/ci.yml`) | typecheck, lint, unit, build, browser tests on every PR |
 
@@ -44,7 +46,8 @@ misconfigured, the other still blocks access.
 
 ## Security decisions so far
 
-- Browser holds only the Supabase **publishable** key. No secret keys exist in Phase 1.
+- Browser holds only the Supabase **publishable** key. No secret keys are used yet.
+- Every table has Row Level Security; server code finds the account with `getCurrentAccount()` and never trusts an account ID from the browser (`DATABASE.md`).
 - Identity on the server comes from `supabase.auth.getClaims()` (signature-verified), never from IDs sent by the browser (Design Spec §25).
 - Redirect targets after sign-in are restricted to same-site paths (`safeNextPath`).
 - Errors shown to people are plain English; technical details go to logs only (`src/lib/log.ts`, `ErrorState`).
@@ -61,6 +64,8 @@ misconfigured, the other still blocks access.
 | Logging | `src/lib/log.ts` (JSON lines → Vercel logs) |
 | Environment | `src/lib/env.ts`, `.env.example` |
 | Auth | see `docs/SETUP_AUTH.md` |
+| Current person + account (server) | `src/lib/account.ts` |
+| Database types (generated) | `src/lib/database.types.ts` |
 
 ## Sample data
 

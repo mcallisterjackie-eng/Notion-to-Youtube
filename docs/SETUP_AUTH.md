@@ -31,6 +31,13 @@ returns through `/auth/callback` to the dashboard. Leave it on.
 Supabase's built-in email sender is rate-limited and meant for testing.
 Before launch, set up custom SMTP (Authentication → Emails → SMTP Settings). Phase 10.
 
+### Email changes (My Profile)
+
+Changing email on My Profile sends a confirmation link; the address changes only
+once it is opened. Leave **Secure email change** on (Authentication → Sign In /
+Providers → Email): Supabase then also asks the *current* address to confirm,
+so a borrowed session cannot quietly move an account to someone else's inbox.
+
 ## 3. Turn on Google sign-in
 
 The **Continue with Google** button appears on `/login` and `/signup`

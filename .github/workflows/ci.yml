@@ -22,6 +22,8 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test
+      # Migrations + Row Level Security tests on a throwaway PostgreSQL (preinstalled on the runner).
+      - run: npm run test:db
       - run: npx playwright install --with-deps chromium
       # Builds the app and runs the browser tests against a local stand-in for
       # Supabase Auth, so no secrets are needed here.

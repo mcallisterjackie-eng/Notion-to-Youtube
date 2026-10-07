@@ -6,7 +6,7 @@ app is the automation layer between Notion, Google Drive and YouTube.
 
 This repository also contains the public marketing site.
 
-> **Status:** Phase 1 (project foundation) of 10. See [`docs/PHASES.md`](docs/PHASES.md).
+> **Status:** Phase 2 (database & security) of 10. See [`docs/PHASES.md`](docs/PHASES.md).
 
 ## Documents
 
@@ -17,6 +17,7 @@ This repository also contains the public marketing site.
 | [`docs/FRONTEND_SPEC.md`](docs/FRONTEND_SPEC.md) | Front-end source design and every deviation from it |
 | [`docs/BRAND_GUIDELINES.md`](docs/BRAND_GUIDELINES.md) | How "The Systems Design Lab" design system is applied |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | How the code is organised and why |
+| [`docs/DATABASE.md`](docs/DATABASE.md) | Tables, access rules and database tests |
 | [`docs/SETUP_AUTH.md`](docs/SETUP_AUTH.md) | Supabase Auth and Google sign-in settings |
 | [`docs/PHASES.md`](docs/PHASES.md) | What each phase delivered |
 
@@ -37,6 +38,7 @@ npm run dev                  # http://localhost:3000
 | `npm run typecheck` | TypeScript |
 | `npm run lint` | ESLint (Next.js rules) |
 | `npm test` | Unit tests (Vitest) |
+| `npm run test:db` | Applies every migration to a throwaway local PostgreSQL and runs the security tests |
 | `npm run test:e2e` | Browser tests on desktop and phone (Playwright). Builds the app and uses a local stand-in for Supabase Auth, so no secrets or network are needed |
 | `npm run check` | typecheck + lint + unit tests + build |
 
@@ -48,7 +50,7 @@ GitHub Actions runs all of these on every pull request.
 - **Sign-in:** `/login`, `/signup`, `/forgot-password`, `/reset-password`
 - **Dashboard (signed in):** `/dashboard` (Overview), `/dashboard/profile`, `/dashboard/analytics`, `/dashboard/billing`, `/dashboard/connections`, `/dashboard/field-mapping`
 
-Dashboard pages show **sample data** (from `src/content/app.ts`, with a banner saying so) until the phases that make them real.
+Dashboard pages other than My Profile show **sample data** (from `src/content/app.ts`, with a banner saying so) until the phases that make them real.
 
 ## Where to edit content
 

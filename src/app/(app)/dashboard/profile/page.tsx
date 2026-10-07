@@ -1,17 +1,19 @@
 import type { Metadata } from "next";
 import { AppPageHeader } from "@/components/app/AppShell";
 import { ProfileForms } from "@/components/app/ProfileForms";
-import { getSessionClaims } from "@/lib/session";
+import { getCurrentAccount } from "@/lib/account";
 import { toDisplayUser } from "@/lib/user";
 
 export const metadata: Metadata = { title: "My Profile" };
 
 export default async function ProfilePage() {
-  const user = toDisplayUser(await getSessionClaims());
+  const me = await getCurrentAccount();
+  if (!me) throw new Error("Your account could not be loaded.");
+  const user = toDisplayUser({ email: me.email, user_metadata: { full_name: me.profile.full_name } });
   return (
     <>
       <AppPageHeader title="My Profile" description="Your account details, password and preferences." />
-      <ProfileForms user={user} />
+      <ProfileForms name={me.profile.full_name || user.name} email={me.email} initials={user.initials} timezone={me.account.timezone} hasPassword={me.hasPassword} />
     </>
   );
 }
