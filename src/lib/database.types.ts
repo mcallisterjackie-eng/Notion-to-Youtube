@@ -27,6 +27,7 @@ export type Database = {
           id: string;
           name: string;
           timezone: string;
+          timezone_confirmed_at: string | null;
           updated_at: string;
         };
         Insert: {
@@ -37,6 +38,7 @@ export type Database = {
           id?: string;
           name: string;
           timezone?: string;
+          timezone_confirmed_at?: string | null;
           updated_at?: string;
         };
         Update: {
@@ -47,6 +49,7 @@ export type Database = {
           id?: string;
           name?: string;
           timezone?: string;
+          timezone_confirmed_at?: string | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -386,7 +389,11 @@ export type Database = {
       };
     };
     Views: { [_ in never]: never };
-    Functions: { [_ in never]: never };
+    Functions: {
+      delete_connection_secret: { Args: { p_account_id: string; p_provider: Database["public"]["Enums"]["connection_provider"] }; Returns: undefined };
+      read_connection_secret: { Args: { p_account_id: string; p_provider: Database["public"]["Enums"]["connection_provider"] }; Returns: string };
+      store_connection_secret: { Args: { p_account_id: string; p_provider: Database["public"]["Enums"]["connection_provider"]; p_secret: string }; Returns: undefined };
+    };
     Enums: {
       automation_status: "enabled" | "inactive";
       connection_provider: "notion" | "youtube" | "google_drive";

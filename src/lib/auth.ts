@@ -8,7 +8,7 @@
 
 import { friendlyAuthError } from "@/lib/auth-errors";
 import { log } from "@/lib/log";
-import { HOME_PATH, safeNextPath } from "@/lib/routes";
+import { HOME_PATH, safeNextPath, SETUP_PATH } from "@/lib/routes";
 import { createClient } from "@/lib/supabase/client";
 
 export type AuthResult = { ok: true } | { ok: false; error: string };
@@ -50,7 +50,7 @@ export async function signUp(name: string, email: string, password: string): Pro
       email,
       password,
       // The time zone seeds the account setting (Design Spec §13); the database validates it.
-      options: { data: { full_name: name.trim(), timezone: browserTimezone() }, emailRedirectTo: callbackUrl(HOME_PATH) },
+      options: { data: { full_name: name.trim(), timezone: browserTimezone() }, emailRedirectTo: callbackUrl(SETUP_PATH) },
     });
     if (error) return fail("auth.signUp", error);
     // With email confirmation on (the Supabase default) there is no session until the link is clicked.

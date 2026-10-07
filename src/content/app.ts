@@ -102,8 +102,6 @@ export function describeFilter(f: AutomationSettings["filter"]) {
   return `${f.property} ${f.type === "Multi-select" ? "includes" : "is"} ${f.value}`;
 }
 
-/** Whether setup was finished in an earlier session (hides the Overview's Setup card). */
-export const sampleSetup = { completedBeforeThisSession: false };
 
 export const sampleStats = {
   uploadedThisMonth: 6,
@@ -111,10 +109,6 @@ export const sampleStats = {
   needsAttention: 1,
 };
 
-export const sampleConnections = {
-  notion: { connected: true, account: "Creator Studio workspace", database: "Content calendar", connectedOn: "Sep 12, 2026" },
-  youtube: { connected: true, account: "Creator Studio channel", database: null as string | null, connectedOn: "Sep 12, 2026" },
-};
 
 export const sampleSubscription = {
   status: "active" as "active" | "none" | "past_due" | "canceled",

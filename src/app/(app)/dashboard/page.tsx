@@ -7,33 +7,35 @@ import { Progress } from "@/components/ui/Progress";
 import { AppPageHeader, Panel } from "@/components/app/AppShell";
 import { AppIcon } from "@/components/app/AppIcons";
 import { StatTile, StatusBadge } from "@/components/app/StatusBadge";
-import { describeFilter, sampleAutomation, sampleConnections, sampleSetup, sampleStats, sampleUploads, youtubeFields } from "@/content/app";
+import { describeFilter, sampleAutomation, sampleStats, sampleUploads, youtubeFields } from "@/content/app";
+import { STATUS_LABELS } from "@/lib/connection-messages";
+import { getConnections, getDataSource } from "@/lib/connections";
+import { setupProgress } from "@/lib/setup";
 
 export const metadata: Metadata = { title: "Overview" };
 
 export default async function OverviewPage() {
   const me = await getCurrentAccount();
-  const first = toDisplayUser(me && { email: me.email, user_metadata: { full_name: me.profile.full_name } }).name.split(" ")[0];
-  // The Automation card reads the same saved settings that Connections and Field Mapping edit.
+  if (!me) throw new Error("Your account could not be loaded.");
+  const first = toDisplayUser({ email: me.email, user_metadata: { full_name: me.profile.full_name } }).name.split(" ")[0];
+  const [connections, dataSource] = await Promise.all([getConnections(me.account.id), getDataSource(me.account.id)]);
+  const progress = setupProgress(connections, Boolean(dataSource), Boolean(me.account.timezone_confirmed_at));
+  // SAMPLE until Phases 4–5: mapping and trigger settings.
   const auto = sampleAutomation;
-  const { notion, youtube } = sampleConnections;
   const mappedFields = youtubeFields.filter((f) => auto.mapping[f.id]);
-  // SAMPLE: derive these from the user's real setup state.
   const setup = [
-    { label: "Connect Notion", done: sampleConnections.notion.connected, href: "/dashboard/connections" },
-    { label: "Connect YouTube", done: sampleConnections.youtube.connected, href: "/dashboard/connections" },
-    { label: "Map your fields", done: true, href: "/dashboard/field-mapping" },
-    { label: "Upload your first video", done: false, href: "/dashboard/field-mapping" },
+    { key: "notion", label: "Connect Notion", done: progress.steps.notion },
+    { key: "youtube", label: "Connect YouTube", done: progress.steps.youtube },
+    { key: "google_drive", label: "Connect Google Drive", done: progress.steps.google_drive },
+    { key: "database", label: "Choose your content calendar", done: progress.steps.database },
+    { key: "timezone", label: "Confirm your time zone", done: progress.steps.timezone },
   ];
-  const doneCount = setup.filter((s) => s.done).length;
-  const allDone = doneCount === setup.length;
-
-  // The Setup card shows until every step is done. It stays for the rest of the session in
-  // which setup finishes, then is hidden from the next login on.
-  // TODO (Supabase): store profiles.setup_completed_at when the last step finishes, and compare
-  // it with the current session's start time: completed before this session began → hide.
-  const completedBeforeThisSession = sampleSetup.completedBeforeThisSession;
-  const showSetup = !(allDone && completedBeforeThisSession);
+  const connectionLabel = (p: "notion" | "youtube" | "google_drive") => {
+    const c = connections[p];
+    if (!c || c.status === "not_connected") return "Not connected";
+    if (c.status !== "connected") return STATUS_LABELS[c.status];
+    return c.external_account_name ?? STATUS_LABELS.connected;
+  };
 
   return (
     <>
@@ -52,14 +54,16 @@ export default async function OverviewPage() {
             </div>
             <dl className="kv">
               <dt>Notion</dt>
-              <dd>{notion.connected ? notion.account : "Not connected"}</dd>
+              <dd>{connectionLabel("notion")}</dd>
               <dt>YouTube</dt>
-              <dd>{youtube.connected ? youtube.account : "Not connected"}</dd>
+              <dd>{connectionLabel("youtube")}</dd>
+              <dt>Google Drive</dt>
+              <dd>{connectionLabel("google_drive")}</dd>
             </dl>
           </div>
           <div className="auto-group">
             <div className="split" style={{ alignItems: "center" }}>
-              <p className="eyebrow" style={{ color: "var(--ink-muted)" }}>From Field Mapping</p>
+              <p className="eyebrow" style={{ color: "var(--ink-muted)" }}>From Field Mapping (sample)</p>
               <Link href="/dashboard/field-mapping" className="ui">Edit</Link>
             </div>
             <dl className="kv">
@@ -82,25 +86,25 @@ export default async function OverviewPage() {
           </div>
         </Panel>
 
-        {showSetup ? (
-        <Panel title="Setup" description={allDone ? "All set. This card will not appear next time you log in." : "A few steps to get your first upload going."}>
-          <Progress label="Setup progress" value={doneCount} max={setup.length} />
-          <ul className="checklist">
-            {setup.map((s) => (
-              <li key={s.label}>
-                {s.done ? (
-                  <span className="check-done"><AppIcon name="check" size={16} /></span>
-                ) : (
-                  <span className="check-todo" aria-hidden="true" />
-                )}
-                <span className={s.done ? "muted" : undefined}>
-                  {s.done ? <span className="visually-hidden">Done: </span> : null}
-                  {s.done ? s.label : <Link href={s.href}>{s.label}</Link>}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </Panel>
+        {!progress.complete ? (
+          <Panel title="Setup" description="A few steps to get your first upload going." actions={<Button href="/dashboard/setup" variant="secondary" size="sm">Continue setup</Button>}>
+            <Progress label="Setup progress" value={progress.done} max={progress.total} />
+            <ul className="checklist">
+              {setup.map((s) => (
+                <li key={s.key}>
+                  {s.done ? (
+                    <span className="check-done"><AppIcon name="check" size={16} /></span>
+                  ) : (
+                    <span className="check-todo" aria-hidden="true" />
+                  )}
+                  <span className={s.done ? "muted" : undefined}>
+                    {s.done ? <span className="visually-hidden">Done: </span> : null}
+                    {s.done ? s.label : <Link href={`/dashboard/setup?step=${s.key}`}>{s.label}</Link>}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </Panel>
         ) : null}
       </div>
 

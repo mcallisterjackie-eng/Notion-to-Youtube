@@ -105,7 +105,7 @@ export function SignupForm({ googleEnabled = false }: { googleEnabled?: boolean 
     const res = await signUp(String(data.get("name") ?? ""), email, String(data.get("password") ?? ""));
     if (!res.ok) return setState({ busy: false, error: res.error });
     if (res.needsConfirmation) return setState({ busy: false, done: true, email });
-    router.replace("/dashboard");
+    router.replace("/dashboard/setup");
     router.refresh();
   }
 

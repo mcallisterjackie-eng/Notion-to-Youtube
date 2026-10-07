@@ -5,6 +5,8 @@
 
 export const LOGIN_PATH = "/login";
 export const HOME_PATH = "/dashboard";
+/** Where new accounts start (onboarding, Design Spec §20). */
+export const SETUP_PATH = "/dashboard/setup";
 
 /** Pages only signed-in users can open. */
 const PROTECTED_PREFIXES = ["/dashboard"];
